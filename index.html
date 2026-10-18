@@ -3,183 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANDRA FLASHER - Pembuat Nota Digital</title>
-    <!-- Library html2canvas untuk mengubah tampilan nota menjadi Gambar PNG -->
+    <title>ANDRA FLASHER - POS & Nota Digital</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <!-- html2canvas untuk Render Gambar PNG HD -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #f0f4f8; padding: 15px; color: #333; }
-        .container { max-width: 520px; margin: 0 auto; background: #fff; padding: 22px; border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-        h2 { text-align: center; color: #1F4E78; margin-bottom: 4px; font-size: 22px; }
-        p.subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 22px; }
-        
-        .form-group { margin-bottom: 14px; }
-        label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; color: #1F4E78; }
-        input, select, textarea { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #fafafa; transition: all 0.2s; }
-        input:focus, select:focus { border-color: #1F4E78; background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(31, 78, 120, 0.1); }
-        .row { display: flex; gap: 12px; }
-        .row .form-group { flex: 1; }
-        
-        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        button { width: 100%; padding: 13px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-img { background-color: #d97706; color: white; }
-        .btn-wa { background-color: #16a34a; color: white; }
-        .btn-print { background-color: #1F4E78; color: white; }
-        button:hover { opacity: 0.92; transform: translateY(-1px); }
-
-        /* Area Tampilan Struk / Nota Visual Desain Premium */
-        #notaContainer { margin-top: 25px; padding: 15px; background: #e2e8f0; border-radius: 10px; display: flex; justify-content: center; }
-        #notaPreview { 
-            background: #ffffff; 
-            width: 100%;
-            max-width: 420px;
-            padding: 24px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-top: 6px solid #1F4E78;
-            color: #1e293b;
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #0f172a;
+            --accent: #2563eb;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
         }
-        .nota-header { text-align: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 14px; margin-bottom: 14px; }
-        .nota-header h3 { color: #1F4E78; font-size: 22px; font-weight: 800; margin-bottom: 2px; letter-spacing: 0.5px; }
-        .nota-header p { font-size: 12px; color: #64748b; font-weight: 500; }
-        
-        .nota-meta { display: flex; justify-content: space-between; font-size: 12px; color: #475569; margin-bottom: 14px; background: #f8fafc; padding: 8px 10px; border-radius: 6px; border: 1px solid #f1f5f9; }
-        
-        .nota-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
-        .nota-table td { padding: 6px 0; vertical-align: top; }
-        .nota-table td.label-col { color: #64748b; width: 38%; font-weight: 500; }
-        .nota-table td.val-col { text-align: right; font-weight: 700; color: #0f172a; width: 62%; }
 
-        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .status-lunas { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .status-belum { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-body); color: #334155; padding: 20px 10px; min-height: 100vh; }
 
-        .total-box { border-top: 2px dashed #cbd5e1; padding-top: 12px; margin-top: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: bold; color: #1F4E78; background: #f8fafc; padding: 10px 12px; border-radius: 6px; }
-        .total-box span:last-child { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .app-wrapper { max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 850px) {
+            .app-wrapper { grid-template-columns: 1.1fr 0.9fr; align-items: start; }
+        }
 
-        .footer-note { text-align: center; font-size: 11px; color: #64748b; margin-top: 18px; border-top: 1px solid #f1f5f9; padding-top: 12px; line-height: 1.4; }
+        /* Top Banner Header */
+        .header-banner {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            color: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header-title h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: 0.5px; }
+        .header-title p { font-size: 13px; color: #93c5fd; margin-top: 4px; }
+        .header-badge { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 12px; font-weight: 600; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+        .header-badge i { font-size: 10px; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        /* Form Card Styling */
+        .card-panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+        .section-title { font-size: 15px; font-weight: 700; color: var(--primary-dark); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+        .section-title i { color: var(--accent); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .full-width { grid-column: 1 / -1; }
+
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        .input-group label { font-size: 12px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper i { position: absolute; left: 14px; color: #94a3b8; font-size: 14px; }
+        .input-wrapper input, .input-wrapper select {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            background: #f8fafc;
+            color: #0f172a;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .input-wrapper input:focus, .input-wrapper select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        /* Action Buttons */
+        .action-group { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-png { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #fff; }
+        .btn-wa { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: #fff; }
+        .btn-print { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); color: #fff; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px -3px rgba(0,0,0,0.15); filter: brightness(1.05); }
+
+        /* Preview Side - Struk Nota Visual Keren */
+        .preview-panel { display: flex; flex-direction: column; align-items: center; }
+        .receipt-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Top Accent Ribbon */
+        .receipt-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 50%, #38bdf8 100%);
+        }
+
+        .receipt-header { text-align: center; padding-bottom: 18px; border-bottom: 2px dashed #cbd5e1; margin-bottom: 18px; }
+        .receipt-header .brand-logo { width: 50px; height: 50px; background: #1e3a8a; color: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px; font-weight: 800; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3); }
+        .receipt-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: #0f172a; letter-spacing: 0.5px; }
+        .receipt-header p { font-size: 12px; color: #64748b; font-weight: 500; margin-top: 2px; }
+
+        .receipt-meta { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; background: #f8fafc; padding: 10px 12px; border-radius: 8px; margin-bottom: 18px; font-weight: 600; border: 1px solid #f1f5f9; }
+        .receipt-meta span strong { color: #0f172a; }
+
+        .receipt-details { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+        .receipt-details td { padding: 7px 0; font-size: 13px; vertical-align: top; }
+        .receipt-details td.lbl { color: #64748b; font-weight: 500; width: 38%; }
+        .receipt-details td.val { color: #0f172a; font-weight: 700; text-align: right; width: 62%; }
+
+        .badge-status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-lunas { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-belum { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        .receipt-total {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+        }
+        .receipt-total span.title { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 600; }
+        .receipt-total span.amount { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: #38bdf8; }
+
+        .receipt-footer { text-align: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8; }
+        .receipt-footer strong { color: #475569; display: block; margin-top: 2px; }
 
         @media print {
-            body * { visibility: hidden; }
-            #notaPreview, #notaPreview * { visibility: visible; }
-            #notaPreview { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; border-top: 6px solid #1F4E78; }
+            body { background: white; padding: 0; }
+            .header-banner, .card-panel { display: none !important; }
+            .app-wrapper { display: block; }
+            .receipt-card { box-shadow: none; border: none; width: 100%; max-width: 100%; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>ANDRA FLASHER</h2>
-    <p class="subtitle">Generator Nota Digital & Struk Konter</p>
+<div class="app-wrapper">
+    <!-- Top Header Banner -->
+    <div class="header-banner">
+        <div class="header-title">
+            <h1>ANDRA FLASHER</h1>
+            <p>Sistem Kasir, Generator Nota Digital & Cetak Struk WA</p>
+        </div>
+        <div class="header-badge">
+            <i class="fa-solid fa-circle"></i> Sistem Aktif Online
+        </div>
+    </div>
 
-    <form id="notaForm">
-        <div class="row">
-            <div class="form-group">
-                <label>No. Nota</label>
-                <input type="text" id="noNota" readonly>
+    <!-- Form Panel -->
+    <div class="card-panel">
+        <div class="section-title">
+            <i class="fa-solid fa-file-pen"></i> Input Transaksi Servis
+        </div>
+
+        <form id="notaForm">
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>No. Nota</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-hashtag"></i>
+                        <input type="text" id="noNota" readonly>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Tanggal</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-calendar-day"></i>
+                        <input type="date" id="tglNota" onchange="updatePreview()">
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Nama Pelanggan</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="namaPelanggan" placeholder="Contoh: Pak Mustofa" oninput="updatePreview()" required>
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>No. WhatsApp Pelanggan</label>
+                    <div class="input-wrapper">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <input type="text" id="noWA" placeholder="08xxxxxxxxxx">
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Tipe HP / Barang</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <input type="text" id="tipeHP" placeholder="Contoh: Redmi Note 10S" oninput="updatePreview()" required>
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Kerusakan</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <input type="text" id="kerusakan" placeholder="Contoh: HP Panas, Dicas Gak Nambah" oninput="updatePreview()" required>
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Tindakan Perbaikan</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-wrench"></i>
+                        <input type="text" id="perbaikan" placeholder="Contoh: Perbaiki Socket Sub Board" oninput="updatePreview()" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Biaya Servis (Rp)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                        <input type="number" id="biaya" placeholder="70000" oninput="updatePreview()" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Status Bayar</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <select id="statusBayar" onchange="updatePreview()">
+                            <option value="LUNAS">LUNAS</option>
+                            <option value="BELUM LUNAS">BELUM LUNAS</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Garansi Servis</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <select id="garansi" onchange="updatePreview()">
+                            <option value="3 Hari">3 Hari</option>
+                            <option value="1 Minggu">1 Minggu</option>
+                            <option value="1 Bulan">1 Bulan</option>
+                            <option value="Tanpa Garansi">Tanpa Garansi</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Tanggal</label>
-                <input type="date" id="tglNota">
+
+            <!-- Action Buttons -->
+            <div class="action-group">
+                <button type="button" class="btn btn-png" onclick="downloadGambarStruk()">
+                    <i class="fa-solid fa-camera"></i> Download Gambar Struk (.PNG)
+                </button>
+                <button type="button" class="btn btn-wa" onclick="kirimWA()">
+                    <i class="fa-brands fa-whatsapp"></i> Kirim Nota Teks WA
+                </button>
+                <button type="button" class="btn btn-print" onclick="cetakNota()">
+                    <i class="fa-solid fa-print"></i> Cetak / PDF Struk
+                </button>
             </div>
-        </div>
+        </form>
+    </div>
 
-        <div class="row">
-            <div class="form-group">
-                <label>Nama Pelanggan</label>
-                <input type="text" id="namaPelanggan" placeholder="Contoh: Pak Mustofa" oninput="updatePreview()" required>
-            </div>
-            <div class="form-group">
-                <label>No. WhatsApp</label>
-                <input type="text" id="noWA" placeholder="08xxxxxxxxxx">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Tipe HP / Barang</label>
-            <input type="text" id="tipeHP" placeholder="Contoh: Redmi Note 10S" oninput="updatePreview()" required>
-        </div>
-
-        <div class="form-group">
-            <label>Kerusakan</label>
-            <input type="text" id="kerusakan" placeholder="Contoh: HP Panas, Dicas Tidak Nambah" oninput="updatePreview()" required>
-        </div>
-
-        <div class="form-group">
-            <label>Tindakan Perbaikan</label>
-            <input type="text" id="perbaikan" placeholder="Contoh: Perbaiki Socket Sub Board" oninput="updatePreview()" required>
-        </div>
-
-        <div class="row">
-            <div class="form-group">
-                <label>Biaya Servis (Rp)</label>
-                <input type="number" id="biaya" placeholder="70000" oninput="updatePreview()" required>
-            </div>
-            <div class="form-group">
-                <label>Status Bayar</label>
-                <select id="statusBayar" onchange="updatePreview()">
-                    <option value="LUNAS">LUNAS</option>
-                    <option value="BELUM LUNAS">BELUM LUNAS</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Garansi</label>
-            <select id="garansi" onchange="updatePreview()">
-                <option value="3 Hari">3 Hari</option>
-                <option value="1 Minggu">1 Minggu</option>
-                <option value="1 Bulan">1 Bulan</option>
-                <option value="Tanpa Garansi">Tanpa Garansi</option>
-            </select>
-        </div>
-
-        <div class="btn-group">
-            <button type="button" class="btn-img" onclick="downloadGambarStruk()">📸 Download Gambar Struk (.PNG)</button>
-            <button type="button" class="btn-wa" onclick="kirimWA()">📲 Kirim Nota Teks WA</button>
-            <button type="button" class="btn-print" onclick="cetakNota()">🖨️ Cetak / PDF</button>
-        </div>
-    </form>
-
-    <!-- Area Struk Visual Desain Premium -->
-    <div id="notaContainer">
-        <div id="notaPreview">
-            <div class="nota-header">
-                <h3>ANDRA FLASHER</h3>
+    <!-- Preview Struk Visual (Desain Keren) -->
+    <div class="preview-panel">
+        <div class="receipt-card" id="receiptRender">
+            <div class="receipt-header">
+                <div class="brand-logo"><i class="fa-solid fa-bolt"></i></div>
+                <h2>ANDRA FLASHER</h2>
                 <p>Spesialis Servis HP & Sparepart</p>
             </div>
 
-            <div class="nota-meta">
+            <div class="receipt-meta">
                 <span>No: <strong id="pNoNota">-</strong></span>
                 <span>Tgl: <strong id="pTgl">-</strong></span>
             </div>
 
-            <table class="nota-table">
-                <tr><td class="label-col">Pelanggan</td><td class="val-col" id="pNama">-</td></tr>
-                <tr><td class="label-col">Tipe HP</td><td class="val-col" id="pTipe">-</td></tr>
-                <tr><td class="label-col">Kerusakan</td><td class="val-col" id="pKerusakan">-</td></tr>
-                <tr><td class="label-col">Perbaikan</td><td class="val-col" id="pPerbaikan">-</td></tr>
+            <table class="receipt-details">
                 <tr>
-                    <td class="label-col">Status</td>
-                    <td class="val-col"><span id="pStatus" class="status-badge status-lunas">LUNAS</span></td>
+                    <td class="lbl">Pelanggan</td>
+                    <td class="val" id="pNama">-</td>
                 </tr>
-                <tr><td class="label-col">Garansi</td><td class="val-col" id="pGaransi">-</td></tr>
+                <tr>
+                    <td class="lbl">Tipe HP</td>
+                    <td class="val" id="pTipe">-</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Kerusakan</td>
+                    <td class="val" id="pKerusakan">-</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Perbaikan</td>
+                    <td class="val" id="pPerbaikan">-</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Status</td>
+                    <td class="val">
+                        <span id="pStatus" class="badge-status badge-lunas">LUNAS</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="lbl">Garansi</td>
+                    <td class="val" id="pGaransi">-</td>
+                </tr>
             </table>
 
-            <div class="total-box">
-                <span>TOTAL BIAYA:</span>
-                <span id="pTotal">Rp 0</span>
+            <div class="receipt-total">
+                <span class="title">Total Biaya</span>
+                <span class="amount" id="pTotal">Rp 0</span>
             </div>
 
-            <div class="footer-note">
+            <div class="receipt-footer">
                 <p>Terima kasih atas kepercayaan Anda!</p>
-                <p><strong>ANDRA FLASHER</strong> — Nota Resmi Servis</p>
+                <strong>ANDRA FLASHER — Nota Resmi</strong>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // Init Default Date & No Nota Auto
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('tglNota').value = today;
     document.getElementById('noNota').value = 'AF-' + Date.now().toString().slice(-6);
@@ -196,9 +377,9 @@
         const pStatusEl = document.getElementById('pStatus');
         pStatusEl.innerText = status;
         if (status === 'LUNAS') {
-            pStatusEl.className = 'status-badge status-lunas';
+            pStatusEl.className = 'badge-status badge-lunas';
         } else {
-            pStatusEl.className = 'status-badge status-belum';
+            pStatusEl.className = 'badge-status badge-belum';
         }
 
         document.getElementById('pGaransi').innerText = document.getElementById('garansi').value;
@@ -209,12 +390,17 @@
 
     updatePreview();
 
+    // Render Gambar PNG HD
     function downloadGambarStruk() {
         const nama = document.getElementById('namaPelanggan').value || 'Pelanggan';
         const noNota = document.getElementById('noNota').value;
-        const element = document.getElementById('notaPreview');
+        const element = document.getElementById('receiptRender');
 
-        html2canvas(element, { scale: 2 }).then(canvas => {
+        html2canvas(element, { 
+            scale: 3, 
+            backgroundColor: null,
+            useCORS: true 
+        }).then(canvas => {
             const link = document.createElement('a');
             link.download = `Nota_${noNota}_${nama.replace(/\s+/g, '_')}.png`;
             link.href = canvas.toDataURL('image/png');
