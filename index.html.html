@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANDRA FLASHER - Kasir & Nota Digital</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            50: '#f0f4f8',
+                            100: '#d9e2ec',
+                            500: '#334e68',
+                            700: '#1F4E78',
+                            800: '#102a43',
+                            900: '#0b1b2b',
+                        },
+                        wa: '#25D366'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* CSS Khusus untuk Cetak Thermal / PDF */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #thermalPrintArea, #thermalPrintArea * {
+                visibility: visible;
+            }
+            #thermalPrintArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                max-width: 80mm; /* Standar Ukuran Kertas Thermal */
+                padding: 10px;
+                background: #fff;
+                color: #000;
+                font-family: monospace;
+                font-size: 12px;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen pb-12">
+
+    <!-- Header / Navbar -->
+    <header class="bg-navy-700 text-white shadow-md sticky top-0 z-50 no-print">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2 rounded-lg">
+                    <i class="fa-solid fa-mobile-screen-button text-2xl text-cyan-300"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide">ANDRA FLASHER</h1>
+                    <p class="text-xs text-slate-300">Servis HP & Sparepart Profesional</p>
+                </div>
+            </div>
+            <div class="text-xs bg-navy-900 px-3 py-1.5 rounded-full text-cyan-300 font-medium">
+                <i class="fa-solid fa-circle text-[8px] text-emerald-400 mr-1 animate-pulse"></i> Online
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Container -->
+    <main class="max-w-4xl mx-auto px-4 mt-6">
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-300 mb-6 bg-white rounded-t-xl p-1.5 shadow-sm no-print">
+            <button id="tabCreateBtn" onclick="switchTab('create')" class="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition flex items-center justify-center gap-2 bg-navy-700 text-white shadow">
+                <i class="fa-solid fa-pen-to-square"></i> Buat Nota Baru
+            </button>
+            <button id="tabHistoryBtn" onclick="switchTab('history')" class="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Nota (<span id="historyCount">0</span>)
+            </button>
+        </div>
+
+        <!-- TAB 1: FORM BUAT NOTA -->
+        <div id="tabCreate" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Input Form (Left Side) -->
+                <div class="lg:col-span-7 bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4 no-print">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h2 class="font-bold text-slate-700 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-receipt text-navy-700"></i> Rincian Servis
+                        </h2>
+                        <button type="button" onclick="resetForm()" class="text-xs text-rose-600 hover:underline flex items-center gap-1 font-medium">
+                            <i class="fa-solid fa-rotate-right"></i> Reset Form
+                        </button>
+                    </div>
+
+                    <form id="receiptForm" onsubmit="event.preventDefault();" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">No. Nota</label>
+                                <input type="text" id="noNota" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono font-bold text-navy-700" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal</label>
+                                <input type="date" id="tglNota" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pelanggan *</label>
+                                <input type="text" id="namaPelanggan" placeholder="misal: Pak Mustofa" oninput="updatePreview()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">No. WhatsApp (Optional)</label>
+                                <input type="tel" id="noWA" placeholder="08123456789" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tipe HP / Barang *</label>
+                            <input type="text" id="tipeHP" placeholder="misal: Redmi Note 10S" oninput="updatePreview()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Kerusakan *</label>
+                            <input type="text" id="kerusakan" placeholder="misal: HP Panas, Dicas Tidak Nambah" oninput="updatePreview()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tindakan / Perbaikan *</label>
+                            <input type="text" id="perbaikan" placeholder="misal: Perbaiki Socket Subboard / Ganti IC" oninput="updatePreview()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Biaya Servis (Rp) *</label>
+                                <input type="number" id="biaya" placeholder="70000" oninput="updatePreview()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none font-bold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Status Pembayaran</label>
+                                <select id="statusBayar" onchange="updatePreview()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none font-semibold">
+                                    <option value="LUNAS" class="text-emerald-600">LUNAS</option>
+                                    <option value="BELUM LUNAS" class="text-rose-600">BELUM LUNAS / NUNGGAK</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Masa Garansi</label>
+                            <select id="garansi" onchange="updatePreview()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-navy-700 outline-none">
+                                <option value="3 Hari">3 Hari</option>
+                                <option value="1 Minggu">1 Minggu</option>
+                                <option value="1 Bulan">1 Bulan</option>
+                                <option value="Tanpa Garansi">Tanpa Garansi</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Live Digital Receipt Preview (Right Side) -->
+                <div class="lg:col-span-5 flex flex-col justify-between space-y-4">
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 relative overflow-hidden" id="receiptPreviewCard">
+                        <!-- Watermark Logo Style -->
+                        <div class="absolute -right-6 -bottom-6 text-slate-100 opacity-50 pointer-events-none">
+                            <i class="fa-solid fa-mobile-screen-button text-9xl"></i>
+                        </div>
+
+                        <!-- Header Nota -->
+                        <div class="text-center border-b-2 border-dashed border-slate-300 pb-4 mb-4 relative">
+                            <h3 class="font-extrabold text-navy-700 text-xl tracking-wider">ANDRA FLASHER</h3>
+                            <p class="text-xs text-slate-500 font-medium">Spesialis Servis HP & Sparepart</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Nota Resmi Digital / Bukti Pembayaran</p>
+                        </div>
+
+                        <!-- Detail Nota -->
+                        <div class="space-y-2 text-xs relative">
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">No. Nota:</span>
+                                <span id="prevNoNota" class="font-mono font-bold text-navy-700">AF-000000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">Tanggal:</span>
+                                <span id="prevTgl" class="font-medium text-slate-700">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">Pelanggan:</span>
+                                <span id="prevNama" class="font-semibold text-slate-800">-</span>
+                            </div>
+                            
+                            <hr class="border-slate-200 my-2">
+
+                            <div class="space-y-1">
+                                <div class="text-slate-500 font-medium">Perangkat:</div>
+                                <div id="prevTipe" class="font-semibold text-slate-800 pl-2">-</div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <div class="text-slate-500 font-medium">Kerusakan:</div>
+                                <div id="prevKerusakan" class="text-slate-700 pl-2 italic">-</div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <div class="text-slate-500 font-medium">Tindakan:</div>
+                                <div id="prevPerbaikan" class="text-slate-700 pl-2">-</div>
+                            </div>
+
+                            <hr class="border-slate-200 my-2">
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-500">Masa Garansi:</span>
+                                <span id="prevGaransi" class="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-medium text-slate-700">3 Hari</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-500">Status Pembayaran:</span>
+                                <span id="prevStatus" class="font-bold px-2 py-0.5 rounded text-[11px] bg-emerald-100 text-emerald-700">LUNAS</span>
+                            </div>
+
+                            <div class="border-t-2 border-dashed border-slate-300 pt-3 mt-3 flex justify-between items-center">
+                                <span class="font-bold text-slate-700 text-sm">TOTAL BIAYA:</span>
+                                <span id="prevBiaya" class="font-bold text-lg text-navy-700">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Footer Note -->
+                        <div class="mt-6 text-center text-[10px] text-slate-400 border-t border-slate-100 pt-3">
+                            <p>Syarat Garansi: Segel utuh & tidak terkena air/jatuh.</p>
+                            <p class="font-semibold text-slate-500 mt-0.5">Terima Kasih Atas Kepercayaan Anda!</p>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-2 no-print">
+                        <button onclick="kirimWA()" class="w-full bg-wa hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> Kirim Nota ke WhatsApp
+                        </button>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="simpanDanCetak()" class="bg-navy-700 hover:bg-navy-800 text-white font-semibold py-2.5 px-3 rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 text-xs">
+                                <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+                            </button>
+                            <button onclick="simpanKeRiwayat()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-3 rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 text-xs">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan ke Riwayat
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: RIWAYAT & CARI NOTA -->
+        <div id="tabHistory" class="hidden space-y-4 no-print">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-3 justify-between items-center">
+                <div class="relative w-full md:w-72">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" onkeyup="filterRiwayat()" placeholder="Cari nama atau tipe HP..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-navy-700 outline-none">
+                </div>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button onclick="clearAllHistory()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1">
+                        <i class="fa-solid fa-trash"></i> Hapus Semua Riwayat
+                    </button>
+                </div>
+            </div>
+
+            <!-- List Riwayat Tabel -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-navy-700 text-white font-semibold uppercase text-[11px] tracking-wider">
+                            <tr>
+                                <th class="p-3">No. Nota / Tgl</th>
+                                <th class="p-3">Pelanggan</th>
+                                <th class="p-3">HP & Kerusakan</th>
+                                <th class="p-3">Biaya</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-200">
+                            <!-- Rows generated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyHistoryMsg" class="p-8 text-center text-slate-400 text-sm hidden">
+                    <i class="fa-solid fa-folder-open text-4xl mb-2 text-slate-300 block"></i>
+                    Belum ada riwayat nota yang tersimpan.
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- AREA KHUSUS CETAK THERMAL PRINTER (58mm) -->
+    <div id="thermalPrintArea" class="hidden">
+        <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 8px;">
+            <strong style="font-size: 14px;">ANDRA FLASHER</strong><br>
+            <span style="font-size: 10px;">Servis HP & Sparepart</span><br>
+            <span style="font-size: 9px;" id="pThermalDate"></span>
+        </div>
+        <table style="width: 100%; font-size: 11px; margin-bottom: 5px;">
+            <tr><td>No:</td><td style="text-align: right;" id="pThermalNo"></td></tr>
+            <tr><td>User:</td><td style="text-align: right;" id="pThermalNama"></td></tr>
+            <tr><td>HP:</td><td style="text-align: right;" id="pThermalTipe"></td></tr>
+            <tr><td>Kerusakan:</td><td style="text-align: right;" id="pThermalKerusakan"></td></tr>
+            <tr><td>Tindakan:</td><td style="text-align: right;" id="pThermalPerbaikan"></td></tr>
+            <tr><td>Garansi:</td><td style="text-align: right;" id="pThermalGaransi"></td></tr>
+            <tr><td>Status:</td><td style="text-align: right;" id="pThermalStatus"></td></tr>
+        </table>
+        <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; margin: 5px 0; font-weight: bold; display: flex; justify-content: space-between;">
+            <span>TOTAL:</span>
+            <span id="pThermalBiaya"></span>
+        </div>
+        <div style="text-align: center; font-size: 9px; margin-top: 8px;">
+            Garansi berlaku jika segel utuh.<br>
+            Terima Kasih!
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-xs font-medium flex items-center gap-2 translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toastMsg">Pesan Notifikasi</span>
+    </div>
+
+    <script>
+        // Init Aplikasi saat siap
+        document.addEventListener('DOMContentLoaded', () => {
+            initFormDefaults();
+            loadHistoryCount();
+        });
+
+        // Toggle Tabs
+        function switchTab(tab) {
+            const createTab = document.getElementById('tabCreate');
+            const historyTab = document.getElementById('tabHistory');
+            const createBtn = document.getElementById('tabCreateBtn');
+            const historyBtn = document.getElementById('tabHistoryBtn');
+
+            if (tab === 'create') {
+                createTab.classList.remove('hidden');
+                historyTab.classList.add('hidden');
+                createBtn.className = "flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition flex items-center justify-center gap-2 bg-navy-700 text-white shadow";
+                historyBtn.className = "flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:bg-slate-100";
+            } else {
+                createTab.classList.add('hidden');
+                historyTab.classList.remove('hidden');
+                historyBtn.className = "flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition flex items-center justify-center gap-2 bg-navy-700 text-white shadow";
+                createBtn.className = "flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:bg-slate-100";
+                renderHistoryTable();
+            }
+        }
+
+        // Set Default Date & Generator No. Nota
+        function initFormDefaults() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tglNota').value = today;
+            
+            // Auto No. Nota format AF-YYYYMMDD-XX
+            const now = new Date();
+            const dateStr = now.getFullYear().toString() +
+                            (now.getMonth() + 1).toString().padStart(2, '0') +
+                            now.getDate().toString().padStart(2, '0');
+            const randomCode = Math.floor(100 + Math.random() * 900);
+            document.getElementById('noNota').value = `AF-${dateStr}-${randomCode}`;
+            
+            updatePreview();
+        }
+
+        // Live Update Card Preview
+        function updatePreview() {
+            const noNota = document.getElementById('noNota').value;
+            const tgl = document.getElementById('tglNota').value;
+            const nama = document.getElementById('namaPelanggan').value || '-';
+            const tipe = document.getElementById('tipeHP').value || '-';
+            const kerusakan = document.getElementById('kerusakan').value || '-';
+            const perbaikan = document.getElementById('perbaikan').value || '-';
+            const biaya = parseFloat(document.getElementById('biaya').value) || 0;
+            const status = document.getElementById('statusBayar').value;
+            const garansi = document.getElementById('garansi').value;
+
+            document.getElementById('prevNoNota').innerText = noNota;
+            document.getElementById('prevTgl').innerText = formatDate(tgl);
+            document.getElementById('prevNama').innerText = nama;
+            document.getElementById('prevTipe').innerText = tipe;
+            document.getElementById('prevKerusakan').innerText = kerusakan;
+            document.getElementById('prevPerbaikan').innerText = perbaikan;
+            document.getElementById('prevGaransi').innerText = garansi;
+            document.getElementById('prevBiaya').innerText = 'Rp ' + biaya.toLocaleString('id-ID');
+
+            const prevStatusEl = document.getElementById('prevStatus');
+            prevStatusEl.innerText = status;
+            if (status === 'LUNAS') {
+                prevStatusEl.className = 'font-bold px-2 py-0.5 rounded text-[11px] bg-emerald-100 text-emerald-700';
+            } else {
+                prevStatusEl.className = 'font-bold px-2 py-0.5 rounded text-[11px] bg-rose-100 text-rose-700';
+            }
+        }
+
+        // Kirim WhatsApp Formatted Message
+        function kirimWA() {
+            const nama = document.getElementById('namaPelanggan').value;
+            const tipe = document.getElementById('tipeHP').value;
+            const biaya = parseFloat(document.getElementById('biaya').value) || 0;
+            let noWA = document.getElementById('noWA').value.trim();
+
+            if (!nama || !tipe || !biaya) {
+                showToast('Isi Nama, Tipe HP, dan Biaya dulu, bre!', 'error');
+                return;
+            }
+
+            // Simpan otomatis ke riwayat tiap kirim WA
+            simpanDataToStorage();
+
+            const noNota = document.getElementById('noNota').value;
+            const tgl = formatDate(document.getElementById('tglNota').value);
+            const kerusakan = document.getElementById('kerusakan').value || '-';
+            const perbaikan = document.getElementById('perbaikan').value || '-';
+            const status = document.getElementById('statusBayar').value;
+            const garansi = document.getElementById('garansi').value;
+
+            // Format No. WA Internasional
+            if (noWA.startsWith('0')) {
+                noWA = '62' + noWA.slice(1);
+            }
+
+            const pesan = 
+`============================
+        *ANDRA FLASHER*        
+   *Nota Servis Resmi Digital*  
+============================
+*No. Nota:* ${noNota}
+*Tanggal:* ${tgl}
+*Pelanggan:* ${nama}
+--------------------------------------------
+*Tipe HP:* ${tipe}
+*Kerusakan:* ${kerusakan}
+*Tindakan:* ${perbaikan}
+--------------------------------------------
+*Total Biaya:* Rp ${biaya.toLocaleString('id-ID')}
+*Status:* *${status}*
+*Garansi:* ${garansi}
+============================
+_Segel utuh = Garansi berlaku._
+_Terima kasih telah servis di ANDRA FLASHER!_`;
+
+            const url = noWA 
+                ? `https://api.whatsapp.com/send?phone=${noWA}&text=${encodeURIComponent(pesan)}`
+                : `https://api.whatsapp.com/send?text=${encodeURIComponent(pesan)}`;
+
+            window.open(url, '_blank');
+            showToast('Membuka WhatsApp...', 'success');
+        }
+
+        // Cetak Nota & Simpan PDF / Thermal
+        function simpanDanCetak() {
+            const nama = document.getElementById('namaPelanggan').value;
+            if (!nama) {
+                showToast('Isi Nama Pelanggan dulu!', 'error');
+                return;
+            }
+
+            simpanDataToStorage();
+
+            // Populate Thermal Area
+            document.getElementById('pThermalNo').innerText = document.getElementById('noNota').value;
+            document.getElementById('pThermalDate').innerText = formatDate(document.getElementById('tglNota').value);
+            document.getElementById('pThermalNama').innerText = document.getElementById('namaPelanggan').value;
+            document.getElementById('pThermalTipe').innerText = document.getElementById('tipeHP').value;
+            document.getElementById('pThermalKerusakan').innerText = document.getElementById('kerusakan').value;
+            document.getElementById('pThermalPerbaikan').innerText = document.getElementById('perbaikan').value;
+            document.getElementById('pThermalGaransi').innerText = document.getElementById('garansi').value;
+            document.getElementById('pThermalStatus').innerText = document.getElementById('statusBayar').value;
+            const biaya = parseFloat(document.getElementById('biaya').value) || 0;
+            document.getElementById('pThermalBiaya').innerText = 'Rp ' + biaya.toLocaleString('id-ID');
+
+            window.print();
+        }
+
+        // Simpan ke LocalStorage
+        function simpanKeRiwayat() {
+            const nama = document.getElementById('namaPelanggan').value;
+            const tipe = document.getElementById('tipeHP').value;
+            const biaya = parseFloat(document.getElementById('biaya').value) || 0;
+
+            if (!nama || !tipe || !biaya) {
+                showToast('Lengkapi Form terlebih dahulu!', 'error');
+                return;
+            }
+
+            simpanDataToStorage();
+            showToast('Nota berhasil disimpan di riwayat!', 'success');
+            resetForm();
+        }
+
+        function simpanDataToStorage() {
+            const dataNota = {
+                noNota: document.getElementById('noNota').value,
+                tgl: document.getElementById('tglNota').value,
+                nama: document.getElementById('namaPelanggan').value,
+                noWA: document.getElementById('noWA').value,
+                tipe: document.getElementById('tipeHP').value,
+                kerusakan: document.getElementById('kerusakan').value,
+                perbaikan: document.getElementById('perbaikan').value,
+                biaya: parseFloat(document.getElementById('biaya').value) || 0,
+                status: document.getElementById('statusBayar').value,
+                garansi: document.getElementById('garansi').value,
+                timestamp: new Date().getTime()
+            };
+
+            let history = JSON.parse(localStorage.getItem('andra_flasher_history')) || [];
+            
+            // Cek kalau noNota udah ada, update
+            const index = history.findIndex(item => item.noNota === dataNota.noNota);
+            if (index !== -1) {
+                history[index] = dataNota;
+            } else {
+                history.unshift(dataNota);
+            }
+
+            localStorage.setItem('andra_flasher_history', JSON.stringify(history));
+            loadHistoryCount();
+        }
+
+        // Render Tabel Riwayat
+        function renderHistoryTable() {
+            const history = JSON.parse(localStorage.getItem('andra_flasher_history')) || [];
+            const tbody = document.getElementById('historyTableBody');
+            const emptyMsg = document.getElementById('emptyHistoryMsg');
+
+            tbody.innerHTML = '';
+
+            if (history.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+
+            emptyMsg.classList.add('hidden');
+
+            history.forEach((item) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                
+                const statusBadge = item.status === 'LUNAS'
+                    ? `<span class="bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded text-[10px]">LUNAS</span>`
+                    : `<span class="bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded text-[10px]">NUNGGAK</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <div class="font-mono font-bold text-navy-700">${item.noNota}</div>
+                        <div class="text-[10px] text-slate-400">${formatDate(item.tgl)}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-semibold text-slate-800">${item.nama}</div>
+                        <div class="text-[10px] text-slate-400">${item.noWA || '-'}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-medium text-slate-700">${item.tipe}</div>
+                        <div class="text-[10px] text-slate-400 truncate max-w-[150px]">${item.kerusakan}</div>
+                    </td>
+                    <td class="p-3 font-bold text-slate-800">
+                        Rp ${item.biaya.toLocaleString('id-ID')}
+                    </td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="loadFromHistory('${item.noNota}')" title="Muat / Edit" class="bg-slate-100 hover:bg-navy-700 hover:text-white text-slate-600 p-1.5 rounded transition">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteHistoryItem('${item.noNota}')" title="Hapus" class="bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 p-1.5 rounded transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Load item riwayat ke Form
+        function loadFromHistory(noNota) {
+            const history = JSON.parse(localStorage.getItem('andra_flasher_history')) || [];
+            const item = history.find(i => i.noNota === noNota);
+
+            if (item) {
+                document.getElementById('noNota').value = item.noNota;
+                document.getElementById('tglNota').value = item.tgl;
+                document.getElementById('namaPelanggan').value = item.nama;
+                document.getElementById('noWA').value = item.noWA || '';
+                document.getElementById('tipeHP').value = item.tipe;
+                document.getElementById('kerusakan').value = item.kerusakan;
+                document.getElementById('perbaikan').value = item.perbaikan;
+                document.getElementById('biaya').value = item.biaya;
+                document.getElementById('statusBayar').value = item.status;
+                document.getElementById('garansi').value = item.garansi;
+
+                updatePreview();
+                switchTab('create');
+                showToast(`Nota ${noNota} dimuat!`, 'success');
+            }
+        }
+
+        // Hapus 1 Item Riwayat
+        function deleteHistoryItem(noNota) {
+            if (confirm(`Yakin ingin menghapus nota ${noNota}?`)) {
+                let history = JSON.parse(localStorage.getItem('andra_flasher_history')) || [];
+                history = history.filter(i => i.noNota !== noNota);
+                localStorage.setItem('andra_flasher_history', JSON.stringify(history));
+                renderHistoryTable();
+                loadHistoryCount();
+                showToast('Nota dihapus!', 'success');
+            }
+        }
+
+        // Hapus Semua Riwayat
+        function clearAllHistory() {
+            if (confirm('Hapus seluruh riwayat simpanan nota?')) {
+                localStorage.removeItem('andra_flasher_history');
+                renderHistoryTable();
+                loadHistoryCount();
+                showToast('Semua riwayat dibersihkan!', 'success');
+            }
+        }
+
+        // Filter Pencarian Riwayat
+        function filterRiwayat() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#historyTableBody tr');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Load Jumlah Counter Riwayat
+        function loadHistoryCount() {
+            const history = JSON.parse(localStorage.getItem('andra_flasher_history')) || [];
+            document.getElementById('historyCount').innerText = history.length;
+        }
+
+        // Reset Form
+        function resetForm() {
+            document.getElementById('receiptForm').reset();
+            initFormDefaults();
+            showToast('Form di-reset', 'success');
+        }
+
+        // Utility: Format Tanggal Indonesia
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateString;
+        }
+
+        // Toast Notification Function
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+            if (type === 'success') {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-base';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-base';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
