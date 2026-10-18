@@ -8,53 +8,61 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #f4f7f6; padding: 15px; color: #333; }
-        .container { max-width: 500px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #1F4E78; margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; color: #1F4E78; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        .row { display: flex; gap: 10px; }
+        body { background-color: #f0f4f8; padding: 15px; color: #333; }
+        .container { max-width: 520px; margin: 0 auto; background: #fff; padding: 22px; border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #1F4E78; margin-bottom: 4px; font-size: 22px; }
+        p.subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 22px; }
+        
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; color: #1F4E78; }
+        input, select, textarea { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #fafafa; transition: all 0.2s; }
+        input:focus, select:focus { border-color: #1F4E78; background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(31, 78, 120, 0.1); }
+        .row { display: flex; gap: 12px; }
         .row .form-group { flex: 1; }
         
-        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        .btn-img { background-color: #E67E22; color: white; }
-        .btn-wa { background-color: #25D366; color: white; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        button { width: 100%; padding: 13px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-img { background-color: #d97706; color: white; }
+        .btn-wa { background-color: #16a34a; color: white; }
         .btn-print { background-color: #1F4E78; color: white; }
-        button:hover { opacity: 0.9; }
+        button:hover { opacity: 0.92; transform: translateY(-1px); }
 
-        /* Area Tampilan Struk / Nota Visual */
-        #notaContainer { margin-top: 20px; padding: 10px; background: #eee; border-radius: 8px; }
+        /* Area Tampilan Struk / Nota Visual Desain Premium */
+        #notaContainer { margin-top: 25px; padding: 15px; background: #e2e8f0; border-radius: 10px; display: flex; justify-content: center; }
         #notaPreview { 
             background: #ffffff; 
-            padding: 20px; 
-            border-radius: 6px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: 1px solid #ddd;
-            color: #000;
+            width: 100%;
+            max-width: 420px;
+            padding: 24px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 6px solid #1F4E78;
+            color: #1e293b;
         }
-        .nota-header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 10px; margin-bottom: 12px; }
-        .nota-header h3 { color: #1F4E78; font-size: 20px; font-weight: bold; margin-bottom: 2px; letter-spacing: 1px; }
-        .nota-header p { font-size: 12px; color: #555; }
+        .nota-header { text-align: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 14px; margin-bottom: 14px; }
+        .nota-header h3 { color: #1F4E78; font-size: 22px; font-weight: 800; margin-bottom: 2px; letter-spacing: 0.5px; }
+        .nota-header p { font-size: 12px; color: #64748b; font-weight: 500; }
         
-        .nota-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
-        .nota-table td { padding: 5px 0; vertical-align: top; }
-        .nota-table td.label-col { color: #555; width: 35%; }
-        .nota-table td.val-col { text-align: right; font-weight: bold; color: #111; width: 65%; }
+        .nota-meta { display: flex; justify-content: space-between; font-size: 12px; color: #475569; margin-bottom: 14px; background: #f8fafc; padding: 8px 10px; border-radius: 6px; border: 1px solid #f1f5f9; }
+        
+        .nota-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
+        .nota-table td { padding: 6px 0; vertical-align: top; }
+        .nota-table td.label-col { color: #64748b; width: 38%; font-weight: 500; }
+        .nota-table td.val-col { text-align: right; font-weight: 700; color: #0f172a; width: 62%; }
 
-        .total-box { border-top: 2px dashed #333; padding-top: 10px; display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; color: #1F4E78; }
-        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .status-lunas { background-color: #d4edda; color: #155724; }
-        .status-belum { background-color: #f8d7da; color: #721c24; }
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .status-lunas { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status-belum { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
-        .footer-note { text-align: center; font-size: 11px; color: #666; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+        .total-box { border-top: 2px dashed #cbd5e1; padding-top: 12px; margin-top: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: bold; color: #1F4E78; background: #f8fafc; padding: 10px 12px; border-radius: 6px; }
+        .total-box span:last-child { font-size: 18px; font-weight: 800; color: #0f172a; }
+
+        .footer-note { text-align: center; font-size: 11px; color: #64748b; margin-top: 18px; border-top: 1px solid #f1f5f9; padding-top: 12px; line-height: 1.4; }
 
         @media print {
             body * { visibility: hidden; }
             #notaPreview, #notaPreview * { visibility: visible; }
-            #notaPreview { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
+            #notaPreview { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; border-top: 6px solid #1F4E78; }
         }
     </style>
 </head>
@@ -62,7 +70,7 @@
 
 <div class="container">
     <h2>ANDRA FLASHER</h2>
-    <p class="subtitle">Generator Nota Digital & Gambar Struk WA</p>
+    <p class="subtitle">Generator Nota Digital & Struk Konter</p>
 
     <form id="notaForm">
         <div class="row">
@@ -133,18 +141,20 @@
         </div>
     </form>
 
-    <!-- Area Struk Visual -->
+    <!-- Area Struk Visual Desain Premium -->
     <div id="notaContainer">
         <div id="notaPreview">
             <div class="nota-header">
                 <h3>ANDRA FLASHER</h3>
                 <p>Spesialis Servis HP & Sparepart</p>
-                <p style="font-size: 10px; color: #888;">Nota Servis Resmi</p>
+            </div>
+
+            <div class="nota-meta">
+                <span>No: <strong id="pNoNota">-</strong></span>
+                <span>Tgl: <strong id="pTgl">-</strong></span>
             </div>
 
             <table class="nota-table">
-                <tr><td class="label-col">No. Nota</td><td class="val-col" id="pNoNota">-</td></tr>
-                <tr><td class="label-col">Tanggal</td><td class="val-col" id="pTgl">-</td></tr>
                 <tr><td class="label-col">Pelanggan</td><td class="val-col" id="pNama">-</td></tr>
                 <tr><td class="label-col">Tipe HP</td><td class="val-col" id="pTipe">-</td></tr>
                 <tr><td class="label-col">Kerusakan</td><td class="val-col" id="pKerusakan">-</td></tr>
@@ -163,14 +173,13 @@
 
             <div class="footer-note">
                 <p>Terima kasih atas kepercayaan Anda!</p>
-                <p><strong>ANDRA FLASHER</strong></p>
+                <p><strong>ANDRA FLASHER</strong> — Nota Resmi Servis</p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Setup tanggal hari ini & nomor nota otomatis
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('tglNota').value = today;
     document.getElementById('noNota').value = 'AF-' + Date.now().toString().slice(-6);
@@ -198,10 +207,8 @@
         document.getElementById('pTotal').innerText = 'Rp ' + biaya.toLocaleString('id-ID');
     }
 
-    // Panggil sekali untuk inisialisasi awal
     updatePreview();
 
-    // Fungsi Mengubah Struk Visual Menjadi Gambar PNG & Mengunduhnya
     function downloadGambarStruk() {
         const nama = document.getElementById('namaPelanggan').value || 'Pelanggan';
         const noNota = document.getElementById('noNota').value;
